@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AGSM 进度汇报</title>
+    <link rel="stylesheet" href="./styles.css?v=20260624-kailas-bg" />
+  </head>
+  <body>
+    <section id="loginScreen" class="login-screen">
+      <div class="login-card">
+        <img class="login-logo" src="./assets/kailas-logo.svg" alt="KAILAS 凯乐石" />
+        <p class="eyebrow">AGSM Access</p>
+        <h1>登录 AGSM 工作台</h1>
+        <p class="login-copy">管理员可查看全员展示和进度，个人账号只维护和查看自己的 OGSM。</p>
+        <form id="loginForm" class="login-form">
+          <label>
+            账号
+            <input id="loginUser" type="text" autocomplete="username" placeholder="请输入账号" required />
+          </label>
+          <label>
+            密码
+            <input id="loginPass" type="password" autocomplete="current-password" placeholder="请输入密码" required />
+          </label>
+          <p id="loginError" class="login-error"></p>
+          <button class="btn primary" type="submit">登录</button>
+        </form>
+        <div class="demo-accounts">
+          <button class="demo-login" data-user="admin" type="button">
+            <strong>管理员账号</strong>
+            <span>admin / admin123</span>
+          </button>
+          <button class="demo-login" data-user="lh" type="button">
+            <strong>个人账号</strong>
+            <span>lh / 123456</span>
+          </button>
+          <button class="demo-login" data-user="cyh" type="button">
+            <strong>个人账号</strong>
+            <span>cyh / 123456</span>
+          </button>
+          <button class="demo-login" data-user="zrx" type="button">
+            <strong>个人账号</strong>
+            <span>zrx / 123456</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-kicker">
+            <div class="kailas-mark" aria-label="凯乐石标志">
+              <img class="kailas-logo-img" src="./assets/kailas-logo.svg" alt="KAILAS 凯乐石" />
+            </div>
+            <span id="reportBadge" class="report-badge">OGSM 2026</span>
+          </div>
+          <p class="eyebrow">IT 数据应用支持组</p>
+          <h1 id="reportTitle">应用支持一组 · OGSM进度汇报</h1>
+          <div class="report-meta-row" aria-label="汇报信息">
+            <span>👤 负责人：<strong id="reportOwner">林荟</strong></span>
+            <span>▣ 报告周期：<strong id="reportPeriod">2026 全年</strong></span>
+            <span>🏢 部门：<strong id="reportDepartment">IT-数据应用支持组</strong></span>
+            <span>📊 更新日期：<strong id="reportDate">2026-06-17</strong></span>
+          </div>
+        </div>
+        <nav class="view-tabs" aria-label="页面切换">
+          <button class="tab-btn active" data-view="dashboard" type="button">领导看板</button>
+          <button class="tab-btn" data-view="showcase" type="button">个人展示</button>
+          <button class="tab-btn" data-view="maintain" type="button">维护中心</button>
+        </nav>
+        <div class="account-box">
+          <div>
+            <strong id="accountName">未登录</strong>
+            <small id="accountRole">请先登录</small>
+          </div>
+          <button id="logoutBtn" class="btn subtle" type="button">退出</button>
+        </div>
+      </header>
+
+      <section class="hero-band">
+        <div class="hero-copy">
+          <p class="section-label">Object</p>
+          <p id="objectText" class="object-text"></p>
+        </div>
+        <div class="hero-score">
+          <div id="overallRing" class="progress-ring">
+            <span id="overallProgress">0%</span>
+          </div>
+          <div>
+            <strong>整体推进</strong>
+            <span id="overallStatus">规划启动</span>
+          </div>
+        </div>
+      </section>
+
+      <main>
+        <section id="dashboardView" class="view-section active">
+          <div class="metric-grid">
+            <div class="metric-card">
+              <span id="memberCount">0</span>
+              <small>成员数</small>
+            </div>
+            <div class="metric-card">
+              <span id="goalCount">0</span>
+              <small>目标数</small>
+            </div>
+            <div class="metric-card">
+              <span id="strategyCount">0</span>
+              <small>策略数</small>
+            </div>
+            <div class="metric-card">
+              <span id="measureCount">0</span>
+              <small>衡量指标</small>
+            </div>
+            <div class="metric-card">
+              <span id="completedPlanCount">0</span>
+              <small>已完成计划</small>
+            </div>
+            <div class="metric-card attention">
+              <span id="pendingPlanCount">0</span>
+              <small>未完成计划</small>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel wide-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="section-label">People</p>
+                  <h2>人员进度总览</h2>
+                </div>
+              </div>
+              <div id="personBoard" class="person-board"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="section-label">Focus</p>
+                  <h2>管理关注</h2>
+                </div>
+              </div>
+              <div id="focusList" class="focus-list"></div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="section-label">Goals</p>
+                <h2>目标推进明细</h2>
+              </div>
+              <select id="dashboardOwnerFilter" class="compact-select" aria-label="领导看板负责人筛选">
+                <option value="all">全部负责人</option>
+              </select>
+            </div>
+            <div id="goalTable" class="goal-table"></div>
+          </section>
+        </section>
+
+        <section id="showcaseView" class="view-section">
+          <div class="showcase-layout">
+            <aside id="memberPanel" class="panel member-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="section-label">Members</p>
+                  <h2>成员</h2>
+                </div>
+              </div>
+              <div id="memberList" class="member-list"></div>
+            </aside>
+
+            <section class="showcase-main">
+              <div class="person-hero">
+                <div>
+                  <p id="personMeta" class="section-label">个人 OGSM</p>
+                  <h2 id="personName">未选择成员</h2>
+                  <p id="personSummary" class="person-summary"></p>
+                </div>
+                <div class="person-stats">
+                  <div><strong id="personAvg">0%</strong><span>平均进度</span></div>
+                  <div><strong id="personGoals">0</strong><span>目标数</span></div>
+                  <div><strong id="personRisks">0</strong><span>风险项</span></div>
+                </div>
+              </div>
+              <div id="showcaseGoals" class="showcase-goals"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="maintainView" class="view-section">
+          <div class="maintenance-toolbar">
+            <div>
+              <p class="section-label">Maintain</p>
+              <h2>维护中心</h2>
+            </div>
+            <div class="toolbar-actions">
+              <button id="addBtn" class="btn primary" type="button">新增目标</button>
+              <button id="exportBtn" class="btn" type="button">导出 JSON</button>
+              <label class="btn file-btn" for="importInput">导入 JSON</label>
+              <input id="importInput" type="file" accept="application/json" hidden />
+              <button id="resetBtn" class="btn subtle" type="button">恢复 Excel 初版</button>
+            </div>
+          </div>
+
+          <div class="maintenance-grid">
+            <aside class="goal-panel">
+              <div class="filters">
+                <input id="searchInput" class="search-input" type="search" placeholder="搜索目标、策略、行动" />
+                <div class="filter-row">
+                  <select id="statusFilter" aria-label="状态筛选">
+                    <option value="all">全部状态</option>
+                    <option value="planning">规划中</option>
+                    <option value="active">推进中</option>
+                    <option value="risk">有风险</option>
+                    <option value="done">已完成</option>
+                  </select>
+                  <select id="ownerFilter" aria-label="负责人筛选">
+                    <option value="all">全部负责人</option>
+                  </select>
+                </div>
+              </div>
+              <div id="goalList" class="goal-list" aria-live="polite"></div>
+            </aside>
+
+            <section class="editor-panel" aria-label="目标编辑">
+              <div class="editor-head">
+                <div>
+                  <p id="selectedMeta" class="section-label">未选择</p>
+                  <h2 id="selectedTitle">请选择一个目标</h2>
+                </div>
+                <button id="deleteBtn" class="btn danger" type="button">删除</button>
+              </div>
+
+              <form id="editorForm" class="editor-form">
+                <div class="form-grid">
+                  <label>
+                    目标 Goal
+                    <textarea id="goalField" rows="4" required></textarea>
+                  </label>
+                  <label>
+                    策略 Strategy
+                    <textarea id="strategyField" rows="6"></textarea>
+                  </label>
+                  <label class="legacy-source-field">
+                    衡量指标 Measure
+                    <textarea id="measureField" rows="6"></textarea>
+                  </label>
+                  <label class="legacy-source-field">
+                    行动 Tactics
+                    <textarea id="tacticsField" rows="8"></textarea>
+                  </label>
+                </div>
+
+                <section class="plan-check-panel">
+                  <div class="panel-head compact-head">
+                    <div>
+                      <p class="section-label">Measure & Actions</p>
+                      <h2>指标与行动关联</h2>
+                    </div>
+                    <small>每个指标下维护自己的行动项，勾选完成后自动计算目标进度</small>
+                  </div>
+                  <div id="metricActionEditor" class="metric-action-editor"></div>
+                  <div class="plan-add-row">
+                    <input id="newPlanInput" type="text" placeholder="输入新的指标" />
+                    <button id="addPlanBtn" class="btn primary" type="button">新增指标</button>
+                  </div>
+                  <div id="planChecklist" class="plan-checklist" hidden></div>
+                </section>
+
+                <div class="detail-grid">
+                  <label>
+                    主导人
+                    <input id="ownerField" type="text" />
+                  </label>
+                  <label>
+                    协助人
+                    <input id="helperField" type="text" />
+                  </label>
+                  <label>
+                    完成日期
+                    <input id="dueDateField" type="date" />
+                  </label>
+                  <label>
+                    状态
+                    <select id="statusField">
+                      <option value="planning">规划中</option>
+                      <option value="active">推进中</option>
+                      <option value="risk">有风险</option>
+                      <option value="done">已完成</option>
+                    </select>
+                  </label>
+                  <label class="progress-field">
+                    进度
+                    <input id="progressField" type="range" min="0" max="100" step="1" disabled />
+                    <span id="progressValue">0%</span>
+                  </label>
+                </div>
+
+                <label>
+                  进度描述
+                  <textarea id="progressDescField" rows="4"></textarea>
+                </label>
+
+                <div class="form-actions">
+                  <p id="saveState" class="save-state">自动保存</p>
+                  <button class="btn primary" type="submit">保存当前目标</button>
+                </div>
+              </form>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js?v=20260625-cloudflare-d1"></script>
+  </body>
+</html>
