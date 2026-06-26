@@ -4,5 +4,5 @@ pages_build_output_dir = "web"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "agsm-dashboard-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_name = "kailas-ogsm-db"
+database_id = "4369d638-b623-4737-970c-93529c0c7ff6"
