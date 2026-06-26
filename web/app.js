@@ -778,6 +778,7 @@ function renderGoalTable() {
   dom.goalTable.innerHTML = goals
     .map((goal, index) => renderReportGoal(goal, index))
     .join("");
+  bindReportActionToggles(dom.goalTable);
 }
 
 function renderReportGoal(goal, index) {
@@ -828,7 +829,10 @@ function renderReportRows(goal) {
           ${rowPlans
             .map(
               (plan) =>
-                `<span class="status-line ${plan.done ? "" : "pending"}">${escapeHtml(plan.done ? "已完成" : "未完成")} · ${escapeHtml(plan.text)}</span>`
+                `<label class="status-line ${plan.done ? "" : "pending"}">
+                  <input class="report-action-done" type="checkbox" data-goal-id="${escapeHtml(goal.id)}" data-metric-id="${escapeHtml(metric.id)}" data-action-id="${escapeHtml(plan.id)}" ${plan.done ? "checked" : ""} />
+                  <span>${escapeHtml(plan.done ? "已完成" : "未完成")} · ${escapeHtml(plan.text)}</span>
+                </label>`
             )
             .join("")}
           <div class="progress-track"><div class="progress-fill" style="width:${metricProgress}%"></div></div>
@@ -870,6 +874,20 @@ function renderShowcase() {
   dom.personGoals.textContent = person.goals.length;
   dom.personRisks.textContent = person.risks;
   dom.showcaseGoals.innerHTML = person.goals.map((goal, index) => renderReportGoal(goal, index)).join("");
+  bindReportActionToggles(dom.showcaseGoals);
+}
+
+function bindReportActionToggles(container) {
+  container.querySelectorAll(".report-action-done").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      toggleReportActionDone(
+        checkbox.dataset.goalId,
+        checkbox.dataset.metricId,
+        checkbox.dataset.actionId,
+        checkbox.checked
+      );
+    });
+  });
 }
 
 function renderMemberList(people) {
@@ -1102,6 +1120,15 @@ function updateActionText(metricId, actionId, value) {
 
 function toggleActionDone(metricId, actionId, done) {
   const item = getSelected();
+  const metric = item?.metrics?.find((entry) => entry.id === metricId);
+  const action = metric?.actions?.find((entry) => entry.id === actionId);
+  if (!item || !action) return;
+  action.done = done;
+  touchGoal(item);
+}
+
+function toggleReportActionDone(goalId, metricId, actionId, done) {
+  const item = state.goals.find((goal) => goal.id === goalId);
   const metric = item?.metrics?.find((entry) => entry.id === metricId);
   const action = metric?.actions?.find((entry) => entry.id === actionId);
   if (!item || !action) return;

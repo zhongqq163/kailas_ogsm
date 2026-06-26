@@ -807,6 +807,7 @@ h3 {
   font-weight: 800;
   line-height: 1.45;
   padding: 6px 8px;
+  cursor: pointer;
 }
 
 .status-line.pending {
@@ -821,6 +822,19 @@ h3 {
 
 .status-line.pending::before {
   content: "☐";
+}
+
+.status-line::before,
+.status-line.pending::before {
+  content: none;
+}
+
+.status-line input[type="checkbox"] {
+  width: 15px;
+  min-width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  accent-color: var(--green);
 }
 
 .owner-stack {
