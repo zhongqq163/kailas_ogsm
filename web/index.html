@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AGSM 进度汇报</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-kailas-bg" />
+    <link rel="stylesheet" href="./styles.css?v=20260628-maintain-top-btn-v2" />
   </head>
   <body>
     <section id="loginScreen" class="login-screen">
@@ -55,13 +55,12 @@
             </div>
             <span id="reportBadge" class="report-badge">OGSM 2026</span>
           </div>
-          <p class="eyebrow">IT 数据应用支持组</p>
-          <h1 id="reportTitle">应用支持一组 · OGSM进度汇报</h1>
+          <h1 id="reportTitle">OGSM进度汇报</h1>
           <div class="report-meta-row" aria-label="汇报信息">
-            <span>👤 负责人：<strong id="reportOwner">林荟</strong></span>
-            <span>▣ 报告周期：<strong id="reportPeriod">2026 全年</strong></span>
-            <span>🏢 部门：<strong id="reportDepartment">IT-数据应用支持组</strong></span>
-            <span>📊 更新日期：<strong id="reportDate">2026-06-17</strong></span>
+            <span><em>负责人</em><strong id="reportOwner">林荟</strong></span>
+            <span><em>周期</em><strong id="reportPeriod">2026 全年</strong></span>
+            <span><em>部门</em><strong id="reportDepartment">IT-数据应用支持组</strong></span>
+            <span><em>更新</em><strong id="reportDate">2026-06-17</strong></span>
           </div>
         </div>
         <nav class="view-tabs" aria-label="页面切换">
@@ -157,6 +156,7 @@
             </div>
             <div id="goalTable" class="goal-table"></div>
           </section>
+          <button id="dashboardTopBtn" class="showcase-top-btn" type="button" aria-label="回到顶部" title="回到顶部">↑</button>
         </section>
 
         <section id="showcaseView" class="view-section">
@@ -187,6 +187,7 @@
               <div id="showcaseGoals" class="showcase-goals"></div>
             </section>
           </div>
+          <button id="showcaseTopBtn" class="showcase-top-btn" type="button" aria-label="回到顶部" title="回到顶部">↑</button>
         </section>
 
         <section id="maintainView" class="view-section">
@@ -200,7 +201,6 @@
               <button id="exportBtn" class="btn" type="button">导出 JSON</button>
               <label class="btn file-btn" for="importInput">导入 JSON</label>
               <input id="importInput" type="file" accept="application/json" hidden />
-              <button id="resetBtn" class="btn subtle" type="button">恢复 Excel 初版</button>
             </div>
           </div>
 
@@ -253,34 +253,22 @@
                   </label>
                 </div>
 
-                <section class="plan-check-panel">
-                  <div class="panel-head compact-head">
-                    <div>
-                      <p class="section-label">Measure & Actions</p>
-                      <h2>指标与行动关联</h2>
-                    </div>
-                    <small>每个指标下维护自己的行动项，勾选完成后自动计算目标进度</small>
-                  </div>
-                  <div id="metricActionEditor" class="metric-action-editor"></div>
-                  <div class="plan-add-row">
-                    <input id="newPlanInput" type="text" placeholder="输入新的指标" />
-                    <button id="addPlanBtn" class="btn primary" type="button">新增指标</button>
-                  </div>
-                  <div id="planChecklist" class="plan-checklist" hidden></div>
-                </section>
-
-                <div class="detail-grid">
+                <div class="detail-grid goal-meta-grid">
                   <label>
                     主导人
-                    <input id="ownerField" type="text" />
+                    <input id="ownerField" type="text" readonly />
                   </label>
                   <label>
-                    协助人
-                    <input id="helperField" type="text" />
+                    协助人（自动汇总）
+                    <input id="helperField" type="text" readonly />
                   </label>
                   <label>
-                    完成日期
-                    <input id="dueDateField" type="date" />
+                    开始日期
+                    <input id="startDateField" type="date" />
+                  </label>
+                  <label>
+                    结束日期
+                    <input id="endDateField" type="date" />
                   </label>
                   <label>
                     状态
@@ -298,6 +286,22 @@
                   </label>
                 </div>
 
+                <section class="plan-check-panel">
+                  <div class="panel-head compact-head">
+                    <div>
+                      <p class="section-label">Measure & Actions</p>
+                      <h2>指标与行动关联</h2>
+                    </div>
+                    <small>每个指标下维护自己的行动项，勾选完成后自动计算目标进度</small>
+                  </div>
+                  <div id="metricActionEditor" class="metric-action-editor"></div>
+                  <div class="plan-add-row">
+                    <input id="newPlanInput" type="text" placeholder="输入新的指标" />
+                    <button id="addPlanBtn" class="btn primary" type="button">新增指标</button>
+                  </div>
+                  <div id="planChecklist" class="plan-checklist" hidden></div>
+                </section>
+
                 <label>
                   进度描述
                   <textarea id="progressDescField" rows="4"></textarea>
@@ -309,11 +313,12 @@
                 </div>
               </form>
             </section>
+          <button id="maintainTopBtn" class="showcase-top-btn" type="button" aria-label="回到顶部" title="回到顶部">↑</button>
           </div>
         </section>
       </main>
     </div>
 
-    <script src="./app.js?v=20260625-cloudflare-d1"></script>
+    <script src="./app.js?v=20260628-maintain-top-btn-v2"></script>
   </body>
 </html>

@@ -2,10 +2,13 @@ const STORAGE_KEY = "agsm-dashboard-v8";
 const AUTH_KEY = "agsm-auth-v1";
 const API_STATE_ENDPOINT = "/api/state";
 const REMOTE_SYNC_DELAY = 700;
+const SEED_ACTION_VERSION = "20260627-expanded-actions";
 
 let remoteSaveTimer;
 let remoteSyncAvailable = false;
 let remoteHydrating = false;
+
+const teamMembers = ["罗飞", "蓝浩", "潘尔逊", "彭泰请", "秦钦勇", "王汉钊", "许森", "钟启庆", "邹一先"];
 
 const accounts = [
   {
@@ -41,7 +44,7 @@ const accounts = [
 const seedState = {
   report: {
     badge: "OGSM 2026",
-    title: "应用支持一组 · OGSM进度汇报",
+    title: "OGSM进度汇报",
     owner: "林荟",
     period: "2026 全年",
     department: "IT-数据应用支持组",
@@ -65,7 +68,7 @@ const memberGoalSets = {
     measure:
       "1、重点业务需求响应及时率>=95%。\n2、需求按期交付率>=90%，高优需求延期率<=5%。\n3、形成高频问题知识卡>=20篇，复用率>=60%。",
     tactics:
-      "1、梳理现有需求来源和流转节点，形成统一需求台账。\n2、制定需求分级、优先级和响应时效规则。\n3、每周同步需求进展和风险，推动阻塞事项闭环。\n4、沉淀高频应用问题处理步骤和模板。\n5、对重点需求进行上线后复盘，记录可复用经验。"
+      "1、梳理现有需求来源和流转节点，形成统一需求台账。\n2、制定需求分级、优先级和响应时效规则。\n3、建立需求排期看板，标记负责人、协助人和预计完成日期。\n4、每周同步需求进展和风险，推动阻塞事项闭环。\n5、对跨部门需求建立验收清单，减少上线前返工。\n6、沉淀高频应用问题处理步骤和模板。\n7、对重点需求进行上线后复盘，记录可复用经验。\n8、每月复查延期需求，输出流程优化建议。"
   },
   {
     goal: "核心应用稳定性与问题闭环",
@@ -74,7 +77,7 @@ const memberGoalSets = {
     measure:
       "1、核心应用可用性>=99.5%。\n2、P1/P2 问题当天响应率100%，闭环率>=95%。\n3、高频重复问题下降30%。\n4、应用巡检覆盖核心系统>=10个。",
     tactics:
-      "1、梳理核心应用清单和关键健康指标。\n2、建立日常巡检表和异常登记机制。\n3、配置关键异常提醒，明确责任人和升级路径。\n4、每月复盘高频问题并推动长期修复。\n5、完善应用支持值班交接和应急预案。"
+      "1、梳理核心应用清单和关键健康指标。\n2、建立日常巡检表和异常登记机制。\n3、配置关键异常提醒，明确责任人和升级路径。\n4、补充重点系统发布前检查项，降低变更风险。\n5、对 P1/P2 问题建立专项跟踪台账。\n6、每月复盘高频问题并推动长期修复。\n7、完善应用支持值班交接和应急预案。\n8、定期演练应急预案并更新联系人清单。"
   },
   {
     goal: "业务数据报表支持与口径治理",
@@ -83,7 +86,7 @@ const memberGoalSets = {
     measure:
       "1、核心报表需求交付>=10项。\n2、重点指标口径确认率>=95%。\n3、报表重复建设减少20%。\n4、业务报表满意度>=90%。",
     tactics:
-      "1、整理现有报表资产和使用频率。\n2、对重点指标建立口径说明和负责人。\n3、优化高频报表展示和筛选体验。\n4、组织业务验收并记录调整意见。\n5、清理低频、重复或口径不一致报表。"
+      "1、整理现有报表资产和使用频率。\n2、对重点指标建立口径说明和负责人。\n3、补齐报表字段说明、刷新频率和适用场景。\n4、优化高频报表展示和筛选体验。\n5、建立报表需求验收模板，统一确认范围。\n6、组织业务验收并记录调整意见。\n7、清理低频、重复或口径不一致报表。\n8、每月输出报表使用分析，推动资产治理。"
   },
   {
     goal: "应用支持知识库与培训赋能",
@@ -92,7 +95,7 @@ const memberGoalSets = {
     measure:
       "1、输出应用支持知识文档>=30篇。\n2、组织业务培训>=4场。\n3、常见问题自助解决率提升30%。\n4、新成员上手周期缩短20%。",
     tactics:
-      "1、按系统和业务场景整理知识库目录。\n2、沉淀常见问题、处理步骤和注意事项。\n3、制作重点应用操作培训材料。\n4、定期更新过期文档并标记负责人。\n5、收集培训反馈，补充业务高频疑问。"
+      "1、按系统和业务场景整理知识库目录。\n2、沉淀常见问题、处理步骤和注意事项。\n3、制作重点应用操作培训材料。\n4、建立新人上手任务包和检查清单。\n5、将典型问题录入知识库并关联对应系统。\n6、定期更新过期文档并标记负责人。\n7、收集培训反馈，补充业务高频疑问。\n8、每季度评估知识库访问和复用效果。"
   }
     ]
   },
@@ -108,7 +111,7 @@ const memberGoalSets = {
         measure:
           "1、核心表质量规则覆盖率>=90%。\n2、质量异常当天识别率>=95%。\n3、重复质量问题下降30%。",
         tactics:
-          "1、梳理核心业务表和关键字段清单。\n2、建立空值、重复、范围、口径一致性校验规则。\n3、配置每日质量巡检任务和异常提醒。\n4、形成质量问题台账并跟踪责任人处理。\n5、每月复盘重复异常并推动源头修复。"
+          "1、梳理核心业务表和关键字段清单。\n2、建立空值、重复、范围、口径一致性校验规则。\n3、配置每日质量巡检任务和异常提醒。\n4、按业务主题设置质量规则优先级和负责人。\n5、对高风险字段增加阈值波动监控。\n6、形成质量问题台账并跟踪责任人处理。\n7、每月复盘重复异常并推动源头修复。\n8、输出质量规则覆盖报告，推动规则补齐。"
       },
       {
         goal: "供应链报表与库存分析优化",
@@ -117,7 +120,7 @@ const memberGoalSets = {
         measure:
           "1、供应链核心看板优化>=4个。\n2、库存分析指标口径确认率>=95%。\n3、重点报表查询耗时下降30%。",
         tactics:
-          "1、整理供应链报表使用反馈和慢查询清单。\n2、统一采购履约、库存周转、库龄等指标口径。\n3、优化高频报表筛选条件和数据模型。\n4、补充缺货、滞销、库存异常预警指标。\n5、组织业务验收并记录优化闭环。"
+          "1、整理供应链报表使用反馈和慢查询清单。\n2、统一采购履约、库存周转、库龄等指标口径。\n3、优化高频报表筛选条件和数据模型。\n4、补充缺货、滞销、库存异常预警指标。\n5、梳理库存异常分类和处理责任人。\n6、建立重点 SKU 周转跟踪视图。\n7、组织业务验收并记录优化闭环。\n8、每月回看供应链报表使用和性能表现。"
       },
       {
         goal: "数据接口稳定性与任务监控",
@@ -126,7 +129,7 @@ const memberGoalSets = {
         measure:
           "1、核心同步任务监控覆盖率100%。\n2、任务失败平均发现时间<=10分钟。\n3、接口异常恢复 SOP 覆盖核心链路>=8条。",
         tactics:
-          "1、梳理核心数据同步任务和依赖关系。\n2、配置任务失败、延迟、数据量波动监控。\n3、建立接口异常排查步骤和联系人清单。\n4、每周检查任务运行趋势和隐患。\n5、沉淀典型故障案例和恢复脚本。"
+          "1、梳理核心数据同步任务和依赖关系。\n2、配置任务失败、延迟、数据量波动监控。\n3、建立接口异常排查步骤和联系人清单。\n4、按链路梳理上游系统、下游报表和影响范围。\n5、补充任务重跑、补数和回滚操作指引。\n6、每周检查任务运行趋势和隐患。\n7、沉淀典型故障案例和恢复脚本。\n8、定期复查监控阈值，减少误报和漏报。"
       },
       {
         goal: "数据资产目录与口径沉淀",
@@ -135,7 +138,7 @@ const memberGoalSets = {
         measure:
           "1、核心数据资产登记>=80项。\n2、重点指标口径说明>=30项。\n3、重复取数需求下降20%。",
         tactics:
-          "1、盘点现有报表、宽表和指标清单。\n2、补充字段说明、负责人和更新频率。\n3、建立指标口径评审和变更记录。\n4、对重复报表和低频资产进行合并建议。\n5、推动业务使用统一资产目录取数。"
+          "1、盘点现有报表、宽表和指标清单。\n2、补充字段说明、负责人和更新频率。\n3、建立指标口径评审和变更记录。\n4、按主题域整理资产标签和适用业务场景。\n5、补齐重点资产的数据来源和血缘说明。\n6、对重复报表和低频资产进行合并建议。\n7、推动业务使用统一资产目录取数。\n8、每月更新资产目录变更和下线清单。"
       }
     ]
   },
@@ -151,7 +154,7 @@ const memberGoalSets = {
         measure:
           "1、上线自动化任务>=6个。\n2、重复人工处理时长下降35%。\n3、自动化任务成功率>=98%。",
         tactics:
-          "1、收集业务高频重复操作和痛点场景。\n2、评估自动化收益、风险和优先级。\n3、开发并上线报表下载、数据校验、通知类任务。\n4、建立自动化任务运行日志和异常提醒。\n5、定期复盘任务收益并优化执行稳定性。"
+          "1、收集业务高频重复操作和痛点场景。\n2、评估自动化收益、风险和优先级。\n3、开发并上线报表下载、数据校验、通知类任务。\n4、建立自动化任务运行日志和异常提醒。\n5、为关键自动化任务补充失败重试和人工兜底流程。\n6、整理自动化任务权限和执行账号清单。\n7、定期复盘任务收益并优化执行稳定性。\n8、沉淀可复用脚本模板，提升后续开发效率。"
       },
       {
         goal: "客服运营数据支持与问题追踪",
@@ -160,7 +163,7 @@ const memberGoalSets = {
         measure:
           "1、客服核心报表交付>=5个。\n2、客服指标口径确认率>=95%。\n3、客服异常问题闭环率>=90%。",
         tactics:
-          "1、梳理客服业务指标和管理场景。\n2、搭建响应时长、询单转化、工单超时等分析报表。\n3、配置客服异常清单和责任人跟进字段。\n4、组织客服主管使用培训和问题答疑。\n5、每月复盘客服数据变化和优化建议。"
+          "1、梳理客服业务指标和管理场景。\n2、搭建响应时长、询单转化、工单超时等分析报表。\n3、配置客服异常清单和责任人跟进字段。\n4、补充售后、退款、投诉等重点问题分类维度。\n5、建立客服异常指标周跟踪机制。\n6、组织客服主管使用培训和问题答疑。\n7、每月复盘客服数据变化和优化建议。\n8、沉淀客服问题案例，反哺报表口径优化。"
       },
       {
         goal: "销售活动数据复盘支持",
@@ -169,7 +172,7 @@ const memberGoalSets = {
         measure:
           "1、活动复盘模板覆盖核心渠道>=5个。\n2、大促复盘出具时效<=3个工作日。\n3、活动指标口径一致性>=95%。",
         tactics:
-          "1、整理历史活动复盘指标和数据来源。\n2、建立活动复盘标准模板和字段口径。\n3、接入渠道、商品、会员和退款维度数据。\n4、输出活动对比分析和异常解释。\n5、沉淀复盘结论并更新分析模板。"
+          "1、整理历史活动复盘指标和数据来源。\n2、建立活动复盘标准模板和字段口径。\n3、接入渠道、商品、会员和退款维度数据。\n4、补充活动预算、优惠、库存和履约维度。\n5、建立活动前预估和活动后复盘对比口径。\n6、输出活动对比分析和异常解释。\n7、沉淀复盘结论并更新分析模板。\n8、定期整理活动复盘案例库，提升复盘效率。"
       },
       {
         goal: "业务培训与数据使用体验优化",
@@ -178,7 +181,7 @@ const memberGoalSets = {
         measure:
           "1、完成数据产品培训>=4场。\n2、输出操作指引>=15篇。\n3、业务自助查询占比提升25%。",
         tactics:
-          "1、收集业务常见问题和使用卡点。\n2、优化重点报表的说明文案和筛选逻辑。\n3、制作数据产品操作手册和短指引。\n4、组织分场景培训并收集反馈。\n5、持续更新 FAQ，降低重复咨询。"
+          "1、收集业务常见问题和使用卡点。\n2、优化重点报表的说明文案和筛选逻辑。\n3、制作数据产品操作手册和短指引。\n4、补充常见场景的取数路径和示例截图。\n5、建立培训报名、签到和反馈记录。\n6、组织分场景培训并收集反馈。\n7、持续更新 FAQ，降低重复咨询。\n8、每月分析自助查询使用数据并优化入口。"
       }
     ]
   }
@@ -190,6 +193,8 @@ seedState.goals = Object.entries(memberGoalSets).flatMap(([memberKey, member]) =
     ...goal,
     owner: member.owner,
     helper: member.helper,
+    startDate: "",
+    endDate: "",
     dueDate: "",
     progress: 0,
     status: "planning",
@@ -223,6 +228,9 @@ const dom = {
   logoutBtn: document.querySelector("#logoutBtn"),
   tabs: document.querySelectorAll(".tab-btn"),
   views: document.querySelectorAll(".view-section"),
+  dashboardTopBtn: document.querySelector("#dashboardTopBtn"),
+  showcaseTopBtn: document.querySelector("#showcaseTopBtn"),
+  maintainTopBtn: document.querySelector("#maintainTopBtn"),
   reportBadge: document.querySelector("#reportBadge"),
   reportTitle: document.querySelector("#reportTitle"),
   reportOwner: document.querySelector("#reportOwner"),
@@ -270,7 +278,8 @@ const dom = {
   tacticsField: document.querySelector("#tacticsField"),
   ownerField: document.querySelector("#ownerField"),
   helperField: document.querySelector("#helperField"),
-  dueDateField: document.querySelector("#dueDateField"),
+  startDateField: document.querySelector("#startDateField"),
+  endDateField: document.querySelector("#endDateField"),
   statusField: document.querySelector("#statusField"),
   progressField: document.querySelector("#progressField"),
   progressValue: document.querySelector("#progressValue"),
@@ -283,6 +292,7 @@ const dom = {
 };
 
 bindEvents();
+ensureTeamMemberOptions();
 renderAll();
 hydrateRemoteState();
 
@@ -329,9 +339,30 @@ function bindEvents() {
   });
   dom.addBtn.addEventListener("click", addGoal);
   dom.deleteBtn.addEventListener("click", deleteSelected);
-  dom.resetBtn.addEventListener("click", resetState);
+  dom.resetBtn?.addEventListener("click", resetState);
   dom.exportBtn.addEventListener("click", exportState);
   dom.importInput.addEventListener("change", importState);
+  const dateInputs = [dom.startDateField, dom.endDateField].filter(Boolean);
+  dateInputs.forEach((input) => {
+    input.addEventListener("click", () => openDatePicker(input));
+  });
+  [dom.dashboardTopBtn, dom.showcaseTopBtn, dom.maintainTopBtn].filter(Boolean).forEach((button) => {
+    button.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+}
+
+function openDatePicker(input) {
+  if (!input || input.disabled) return;
+  input.focus();
+  if (typeof input.showPicker === "function") {
+    try {
+      input.showPicker();
+    } catch (error) {
+      // Some browsers only allow showPicker during direct user activation.
+    }
+  }
 }
 
 function switchView(view) {
@@ -342,6 +373,9 @@ function switchView(view) {
     view = "dashboard";
   }
   currentView = view;
+  document.body.classList.toggle("dashboard-view-mode", view === "dashboard");
+  document.body.classList.toggle("showcase-view-mode", view === "showcase");
+  document.body.classList.toggle("maintain-view-mode", view === "maintain");
   dom.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   dom.views.forEach((section) => section.classList.toggle("active", section.id === `${view}View`));
 }
@@ -368,6 +402,9 @@ function normalizeState(nextState) {
   if (nextState.report.department === "IT 信息技术") {
     nextState.report.department = seedState.report.department;
   }
+  if (["应用支持一组 · OGSM进度汇报", "数据应用支持组 · OGSM进度汇报"].includes(nextState.report.title)) {
+    nextState.report.title = seedState.report.title;
+  }
   const seedGoalIds = new Set(seedState.goals.map((goal) => goal.id));
   nextState.goals = nextState.goals
     .filter((goal) => goal.owner !== "钟启庆")
@@ -381,12 +418,49 @@ function normalizeState(nextState) {
   seedState.goals
     .filter((goal) => !existingGoalIds.has(goal.id))
     .forEach((goal) => nextState.goals.push(structuredClone(goal)));
+  const shouldMergeSeedActions = nextState.seedActionVersion !== SEED_ACTION_VERSION;
   nextState.goals = nextState.goals.map((goal) => {
     const normalized = syncGoalStructure(goal);
+    if (shouldMergeSeedActions) mergeSeedActions(normalized);
     normalized.progress = calculateGoalProgress(normalized);
     return normalized;
   });
+  nextState.seedActionVersion = SEED_ACTION_VERSION;
   return nextState;
+}
+
+function mergeSeedActions(goal) {
+  const seedGoal = seedState.goals.find((item) => item.id === goal.id);
+  if (!seedGoal) return goal;
+  const seedMetrics = buildMetricsFromLegacyText(seedGoal, new Map());
+  const existingActionTexts = new Set(flattenActions(goal).map((action) => normalizePlanText(action.text)));
+  seedMetrics.forEach((seedMetric) => {
+    let targetMetric =
+      goal.metrics.find((metric) => metric.id === seedMetric.id) ||
+      goal.metrics.find((metric) => normalizePlanText(metric.text) === normalizePlanText(seedMetric.text));
+    if (!targetMetric) {
+      targetMetric = {
+        id: seedMetric.id,
+        text: seedMetric.text,
+        actions: []
+      };
+      goal.metrics.push(targetMetric);
+    }
+    seedMetric.actions.forEach((seedAction) => {
+      const actionText = normalizePlanText(seedAction.text);
+      if (!actionText || existingActionTexts.has(actionText)) return;
+      targetMetric.actions.push({
+        id: makePlanId(`${targetMetric.id}-${actionText}`, targetMetric.actions.length),
+        text: actionText,
+        done: false,
+        owner: normalizeOwner(seedAction.owner, goal.owner),
+        helper: normalizePeople(seedAction.helper, goal.helper)
+      });
+      existingActionTexts.add(actionText);
+    });
+  });
+  syncLegacyTextFromMetrics(goal);
+  return goal;
 }
 
 function loadCurrentUser() {
@@ -509,7 +583,7 @@ function renderReportMeta() {
   const report = state.report || seedState.report;
   const owner = currentUser?.role === "member" ? currentUser.personName : report.owner || selectedPerson;
   dom.reportBadge.textContent = report.badge || "OGSM 2026";
-  dom.reportTitle.textContent = report.title || "应用支持一组 · OGSM进度汇报";
+  dom.reportTitle.textContent = report.title || "OGSM进度汇报";
   dom.reportOwner.textContent = owner || "未指定";
   dom.reportPeriod.textContent = report.period || "2026 全年";
   dom.reportDepartment.textContent = report.department || "IT-数据应用支持组";
@@ -602,6 +676,84 @@ function normalizePlanText(text) {
     .trim();
 }
 
+function normalizePeople(value, fallback = "") {
+  const source = Array.isArray(value) ? value.join("、") : String(value || fallback || "");
+  const names = source
+    .split(/[、,，;；/\s]+/)
+    .map((name) => name.trim())
+    .filter(Boolean);
+  return [...new Set(names)].join("、");
+}
+
+function splitPeople(value) {
+  return normalizePeople(value).split("、").filter(Boolean);
+}
+
+function normalizeOwner(value, fallback = "") {
+  return splitPeople(value || fallback)[0] || "";
+}
+
+function syncGoalHelperFromActions(goal) {
+  const ownerNames = new Set(splitPeople(goal.owner));
+  const helpers = [];
+  flattenActions(goal).forEach((action) => {
+    [...splitPeople(action.owner), ...splitPeople(action.helper)].forEach((name) => {
+      if (!ownerNames.has(name)) helpers.push(name);
+    });
+  });
+  goal.helper = normalizePeople(helpers);
+  return goal.helper;
+}
+
+function getAccountOwner() {
+  return currentUser?.role === "member" ? currentUser.personName : selectedPerson || "";
+}
+
+function formatDateRange(goal) {
+  const start = goal.startDate || "未设开始";
+  const end = goal.endDate || goal.dueDate || "未设结束";
+  return `${start} ~ ${end}`;
+}
+
+function ensureTeamMemberOptions() {
+  let datalist = document.querySelector("#teamMemberOptions");
+  if (!datalist) {
+    datalist = document.createElement("datalist");
+    datalist.id = "teamMemberOptions";
+    document.body.append(datalist);
+  }
+  datalist.innerHTML = teamMembers.map((name) => `<option value="${escapeHtml(name)}"></option>`).join("");
+}
+
+function renderPeopleSelect(metricId, actionId, field, value, placeholder) {
+  const isSingle = field === "owner";
+  const selected = isSingle ? splitPeople(value).slice(0, 1) : splitPeople(value);
+  const inputPlaceholder = selected.length ? (isSingle ? "更换负责人" : "继续选择") : placeholder;
+  return `
+    <div class="people-select" data-metric-id="${escapeHtml(metricId)}" data-action-id="${escapeHtml(actionId)}" data-field="${escapeHtml(field)}" data-single="${isSingle ? "true" : "false"}">
+      <div class="people-chip-list">
+        ${selected
+          .map(
+            (name) => `
+            <span class="people-chip">
+              <span>${escapeHtml(name)}</span>
+              <button class="people-chip-remove" type="button" data-metric-id="${escapeHtml(metricId)}" data-action-id="${escapeHtml(actionId)}" data-field="${escapeHtml(field)}" data-name="${escapeHtml(name)}" aria-label="移除${escapeHtml(name)}">×</button>
+            </span>`
+          )
+          .join("")}
+        <input class="people-filter-input" type="text" data-metric-id="${escapeHtml(metricId)}" data-action-id="${escapeHtml(actionId)}" data-field="${escapeHtml(field)}" placeholder="${escapeHtml(inputPlaceholder)}" aria-label="${escapeHtml(placeholder)}" />
+      </div>
+      <div class="people-dropdown">
+        ${teamMembers
+          .map((name) => {
+            const isSelected = selected.includes(name);
+            return `<button class="person-option-btn ${isSelected ? "selected" : ""}" type="button" data-metric-id="${escapeHtml(metricId)}" data-action-id="${escapeHtml(actionId)}" data-field="${escapeHtml(field)}" data-name="${escapeHtml(name)}" ${isSelected ? "disabled" : ""}>${escapeHtml(name)}</button>`;
+          })
+          .join("")}
+      </div>
+    </div>`;
+}
+
 function makePlanId(text, index) {
   let hash = 0;
   const source = `${text}-${index}`;
@@ -630,7 +782,9 @@ function syncGoalStructure(goal) {
         return {
           id: action.id || makePlanId(actionText || `行动${actionIndex + 1}`, actionIndex),
           text: actionText || `行动 ${actionIndex + 1}`,
-          done: Boolean(action.done ?? planDoneByText.get(actionText))
+          done: Boolean(action.done ?? planDoneByText.get(actionText)),
+          owner: normalizeOwner(action.owner || action.assignee, goal.owner),
+          helper: normalizePeople(action.helper, goal.helper)
         };
       })
     };
@@ -653,7 +807,9 @@ function buildMetricsFromLegacyText(goal, planDoneByText) {
       actions: actions.map((text, actionIndex) => ({
         id: makePlanId(text, actionIndex),
         text,
-        done: Boolean(planDoneByText.get(text))
+        done: Boolean(planDoneByText.get(text)),
+        owner: normalizeOwner(goal.owner),
+        helper: normalizePeople(goal.helper)
       }))
     };
   });
@@ -667,6 +823,7 @@ function syncLegacyTextFromMetrics(goal) {
     .map((action, index) => `${index + 1}、${action.text}`)
     .join("\n");
   goal.plans = flattenActions(goal);
+  syncGoalHelperFromActions(goal);
 }
 
 function flattenActions(goal) {
@@ -778,7 +935,6 @@ function renderGoalTable() {
   dom.goalTable.innerHTML = goals
     .map((goal, index) => renderReportGoal(goal, index))
     .join("");
-  bindReportActionToggles(dom.goalTable);
 }
 
 function renderReportGoal(goal, index) {
@@ -790,7 +946,7 @@ function renderReportGoal(goal, index) {
       <header class="report-goal-head">
         <div class="report-icon">${index + 1}</div>
         <div>
-          <small>GOAL ${index + 1} · ${escapeHtml(statusMap[goal.status] || "未设置")} · ${planSummary.done}/${planSummary.total || 0} 项完成</small>
+          <small>GOAL ${index + 1} · ${escapeHtml(statusMap[goal.status] || "未设置")} · ${planSummary.done}/${planSummary.total || 0} 项完成 · ${escapeHtml(formatDateRange(goal))}</small>
           <strong>${escapeHtml(goal.goal)}</strong>
         </div>
       </header>
@@ -800,7 +956,7 @@ function renderReportGoal(goal, index) {
       </div>
       <div class="report-table">
         <div class="report-table-head">
-          <span>#</span>
+          <span aria-hidden="true"></span>
           <span>衡量指标</span>
           <span>行动计划（TACTICS）</span>
           <span>进度状态</span>
@@ -819,28 +975,43 @@ function renderReportRows(goal) {
       ? Math.round((rowPlans.filter((plan) => plan.done).length / rowPlans.length) * 100)
       : 0;
     return `
-      <div class="report-row">
-        <span>${index + 1}</span>
-        <div class="measure-title">${escapeHtml(metric.text || goal.goal)}</div>
-        <ul class="plan-list">
-          ${rowPlans.map((plan) => `<li>${escapeHtml(plan.text)}</li>`).join("") || "<li>暂无行动计划</li>"}
+      <div class="report-row" aria-label="指标 ${index + 1}">
+        <span class="metric-index" data-label="序号">${index + 1}</span>
+        <div class="measure-title" data-label="衡量指标">${escapeHtml(metric.text || goal.goal)}</div>
+        <ul class="plan-list" data-label="行动计划">
+          ${rowPlans
+            .map(
+              (plan) => `
+              <li>
+                <span>${escapeHtml(plan.text)}</span>
+                <small>负责人：${escapeHtml(plan.owner || "未指定")}；协助人：${escapeHtml(plan.helper || "未指定")}</small>
+              </li>`
+            )
+            .join("") || "<li>暂无行动计划</li>"}
         </ul>
-        <div class="status-stack">
+        <div class="status-stack" data-label="进度状态">
           ${rowPlans
             .map(
               (plan) =>
-                `<label class="status-line ${plan.done ? "" : "pending"}">
-                  <input class="report-action-done" type="checkbox" data-goal-id="${escapeHtml(goal.id)}" data-metric-id="${escapeHtml(metric.id)}" data-action-id="${escapeHtml(plan.id)}" ${plan.done ? "checked" : ""} />
+                `<div class="status-line ${plan.done ? "" : "pending"}">
+                  <span class="status-dot" aria-hidden="true"></span>
                   <span>${escapeHtml(plan.done ? "已完成" : "未完成")} · ${escapeHtml(plan.text)}</span>
-                </label>`
+                </div>`
             )
             .join("")}
           <div class="progress-track"><div class="progress-fill" style="width:${metricProgress}%"></div></div>
           <div class="progress-row"><span>指标进度</span><strong>${metricProgress}%</strong></div>
         </div>
-        <div class="owner-stack">
-          <span class="owner-badge">${escapeHtml(goal.owner || "未指定")}</span>
-          ${goal.helper ? `<span class="pill">${escapeHtml(goal.helper)}</span>` : ""}
+        <div class="owner-stack" data-label="负责人">
+          ${rowPlans
+            .map(
+              (plan) => `
+              <div class="task-owner-line">
+                <span class="owner-badge">${escapeHtml(plan.owner || "未指定")}</span>
+                <span class="pill">${escapeHtml(plan.helper || "未指定")}</span>
+              </div>`
+            )
+            .join("") || `<span class="owner-badge">${escapeHtml(goal.owner || "未指定")}</span>`}
         </div>
       </div>`;
   });
@@ -874,20 +1045,6 @@ function renderShowcase() {
   dom.personGoals.textContent = person.goals.length;
   dom.personRisks.textContent = person.risks;
   dom.showcaseGoals.innerHTML = person.goals.map((goal, index) => renderReportGoal(goal, index)).join("");
-  bindReportActionToggles(dom.showcaseGoals);
-}
-
-function bindReportActionToggles(container) {
-  container.querySelectorAll(".report-action-done").forEach((checkbox) => {
-    checkbox.addEventListener("change", () => {
-      toggleReportActionDone(
-        checkbox.dataset.goalId,
-        checkbox.dataset.metricId,
-        checkbox.dataset.actionId,
-        checkbox.checked
-      );
-    });
-  });
 }
 
 function renderMemberList(people) {
@@ -918,7 +1075,10 @@ function renderShowcaseCard(goal) {
     .map(
       (metric, index) =>
         `${index + 1}、${metric.text}\n${(metric.actions || [])
-          .map((action, actionIndex) => `  ${index + 1}.${actionIndex + 1} ${action.done ? "已完成" : "未完成"}：${action.text}`)
+          .map(
+            (action, actionIndex) =>
+              `  ${index + 1}.${actionIndex + 1} ${action.done ? "已完成" : "未完成"}：${action.text}（负责人：${action.owner || "未指定"}；协助人：${action.helper || "未指定"}）`
+          )
           .join("\n")}`
     )
     .join("\n");
@@ -942,7 +1102,10 @@ function renderMaintainList() {
   const status = dom.statusFilter.value;
   const owner = dom.ownerFilter.value;
   const goals = getVisibleGoals().filter((item) => {
-    const text = `${item.goal} ${item.strategy} ${item.measure} ${item.tactics} ${item.progressDesc}`.toLowerCase();
+    const actionText = flattenActions(item)
+      .map((action) => `${action.text} ${action.owner} ${action.helper}`)
+      .join(" ");
+    const text = `${item.goal} ${item.strategy} ${item.measure} ${item.tactics} ${item.progressDesc} ${actionText}`.toLowerCase();
     return (
       (!query || text.includes(query)) &&
       (status === "all" || item.status === status) &&
@@ -963,7 +1126,7 @@ function renderMaintainList() {
         <div class="card-meta">
           <span class="pill ${item.status}">${statusMap[item.status] || "未设置"}</span>
           <span class="pill">${escapeHtml(item.owner || "未指定")}</span>
-          <span class="pill">${item.dueDate ? escapeHtml(item.dueDate) : "未设日期"}</span>
+          <span class="pill">${escapeHtml(formatDateRange(item))}</span>
         </div>
         <div class="progress-track"><div class="progress-fill" style="width:${Number(item.progress || 0)}%"></div></div>
         <div class="progress-row"><span>${escapeHtml(item.progressDesc || "暂无进度描述")}</span><strong>${Number(item.progress || 0)}%</strong></div>
@@ -987,7 +1150,8 @@ function renderEditor() {
     field.disabled = disabled;
   });
   dom.deleteBtn.disabled = disabled;
-  dom.ownerField.disabled = disabled || currentUser?.role !== "admin";
+  dom.ownerField.disabled = true;
+  dom.helperField.disabled = true;
   dom.progressField.disabled = true;
   dom.newPlanInput.disabled = disabled;
   dom.addPlanBtn.disabled = disabled;
@@ -1008,9 +1172,12 @@ function renderEditor() {
   dom.strategyField.value = item.strategy || "";
   dom.measureField.value = item.measure || "";
   dom.tacticsField.value = item.tactics || "";
+  item.owner = getAccountOwner() || item.owner || "";
+  syncGoalHelperFromActions(item);
   dom.ownerField.value = item.owner || "";
   dom.helperField.value = item.helper || "";
-  dom.dueDateField.value = item.dueDate || "";
+  dom.startDateField.value = item.startDate || "";
+  dom.endDateField.value = item.endDate || item.dueDate || "";
   dom.statusField.value = item.status || "planning";
   dom.progressField.value = Number(item.progress || 0);
   dom.progressValue.textContent = `${Number(item.progress || 0)}%`;
@@ -1037,12 +1204,18 @@ function renderMetricActionEditor(goal) {
           ${(metric.actions || [])
             .map(
               (action, actionIndex) => `
-              <label class="action-edit-row ${action.done ? "done" : ""}">
+              <div class="action-edit-row ${action.done ? "done" : ""}">
                 <span class="action-no">${metricIndex + 1}.${actionIndex + 1}</span>
                 <input class="action-done-input" type="checkbox" data-metric-id="${escapeHtml(metric.id)}" data-action-id="${escapeHtml(action.id)}" ${action.done ? "checked" : ""} />
                 <input class="action-text-input" type="text" data-metric-id="${escapeHtml(metric.id)}" data-action-id="${escapeHtml(action.id)}" value="${escapeHtml(action.text)}" aria-label="行动内容" />
+                <div class="people-field action-owner-field">
+                  ${renderPeopleSelect(metric.id, action.id, "owner", action.owner || "", "选择负责人")}
+                </div>
+                <div class="people-field action-helper-field">
+                  ${renderPeopleSelect(metric.id, action.id, "helper", action.helper || "", "选择协助人")}
+                </div>
                 <button class="icon-btn danger delete-action-btn" type="button" data-metric-id="${escapeHtml(metric.id)}" data-action-id="${escapeHtml(action.id)}" title="删除行动">删除</button>
-              </label>`
+              </div>`
             )
             .join("") || `<div class="empty-action">该指标下暂无行动项</div>`}
         </div>
@@ -1057,8 +1230,31 @@ function renderMetricActionEditor(goal) {
   dom.metricActionEditor.querySelectorAll(".action-text-input").forEach((input) => {
     input.addEventListener("input", () => updateActionText(input.dataset.metricId, input.dataset.actionId, input.value));
   });
+  dom.metricActionEditor.querySelectorAll(".people-filter-input").forEach((input) => {
+    input.addEventListener("input", () => filterPeopleOptions(input));
+    input.addEventListener("keydown", (event) => {
+      if (["Enter", ",", "，", "、"].includes(event.key)) {
+        event.preventDefault();
+        appendActionPerson(input.dataset.metricId, input.dataset.actionId, input.dataset.field, input.value);
+      }
+    });
+  });
+  dom.metricActionEditor.querySelectorAll(".people-select").forEach((select) => {
+    select.addEventListener("click", () => select.querySelector(".people-filter-input")?.focus());
+  });
+  dom.metricActionEditor.querySelectorAll(".people-chip-remove").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      removeActionPerson(button.dataset.metricId, button.dataset.actionId, button.dataset.field, button.dataset.name);
+    });
+  });
   dom.metricActionEditor.querySelectorAll(".action-done-input").forEach((checkbox) => {
     checkbox.addEventListener("change", () => toggleActionDone(checkbox.dataset.metricId, checkbox.dataset.actionId, checkbox.checked));
+  });
+  dom.metricActionEditor.querySelectorAll(".person-option-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      appendActionPerson(button.dataset.metricId, button.dataset.actionId, button.dataset.field, button.dataset.name);
+    });
   });
   dom.metricActionEditor.querySelectorAll(".add-action-btn").forEach((button) => {
     button.addEventListener("click", () => addActionToMetric(button.dataset.metricId));
@@ -1095,7 +1291,9 @@ function addActionToMetric(metricId) {
   metric.actions.push({
     id: makePlanId(`${metric.id}-${text}`, metric.actions.length),
     text,
-    done: false
+    done: false,
+    owner: normalizeOwner(item.owner),
+    helper: ""
   });
   touchGoal(item);
   flashSave("已新增行动");
@@ -1118,17 +1316,47 @@ function updateActionText(metricId, actionId, value) {
   touchGoal(item, false);
 }
 
-function toggleActionDone(metricId, actionId, done) {
+function updateActionPeople(metricId, actionId, field, value) {
   const item = getSelected();
   const metric = item?.metrics?.find((entry) => entry.id === metricId);
   const action = metric?.actions?.find((entry) => entry.id === actionId);
-  if (!item || !action) return;
-  action.done = done;
+  if (!item || !action || !["owner", "helper"].includes(field)) return;
+  action[field] = field === "owner" ? normalizeOwner(value) : normalizePeople(value);
+  syncGoalHelperFromActions(item);
+  dom.helperField.value = item.helper || "";
+  touchGoal(item, false);
+}
+
+function filterPeopleOptions(input) {
+  const keyword = input.value.trim().toLowerCase();
+  const select = input.closest(".people-select");
+  select?.querySelectorAll(".person-option-btn").forEach((button) => {
+    button.hidden = Boolean(keyword) && !button.dataset.name.toLowerCase().includes(keyword);
+  });
+}
+
+function removeActionPerson(metricId, actionId, field, name) {
+  const item = getSelected();
+  const metric = item?.metrics?.find((entry) => entry.id === metricId);
+  const action = metric?.actions?.find((entry) => entry.id === actionId);
+  if (!item || !action || !["owner", "helper"].includes(field) || !name) return;
+  action[field] = splitPeople(action[field]).filter((person) => person !== name).join("、");
+  syncGoalHelperFromActions(item);
   touchGoal(item);
 }
 
-function toggleReportActionDone(goalId, metricId, actionId, done) {
-  const item = state.goals.find((goal) => goal.id === goalId);
+function appendActionPerson(metricId, actionId, field, name) {
+  const item = getSelected();
+  const metric = item?.metrics?.find((entry) => entry.id === metricId);
+  const action = metric?.actions?.find((entry) => entry.id === actionId);
+  if (!item || !action || !["owner", "helper"].includes(field) || !name) return;
+  action[field] = field === "owner" ? normalizeOwner(name) : normalizePeople(`${action[field] || ""}、${name}`);
+  syncGoalHelperFromActions(item);
+  touchGoal(item);
+}
+
+function toggleActionDone(metricId, actionId, done) {
+  const item = getSelected();
   const metric = item?.metrics?.find((entry) => entry.id === metricId);
   const action = metric?.actions?.find((entry) => entry.id === actionId);
   if (!item || !action) return;
@@ -1173,9 +1401,11 @@ function saveSelected() {
   if (!item) return;
   item.goal = dom.goalField.value.trim();
   item.strategy = dom.strategyField.value.trim();
-  item.owner = currentUser?.role === "member" ? currentUser.personName : dom.ownerField.value.trim();
-  item.helper = dom.helperField.value.trim();
-  item.dueDate = dom.dueDateField.value;
+  item.owner = getAccountOwner() || item.owner || "";
+  syncGoalHelperFromActions(item);
+  item.startDate = dom.startDateField.value;
+  item.endDate = dom.endDateField.value;
+  item.dueDate = item.endDate;
   item.status = dom.statusField.value;
   syncLegacyTextFromMetrics(item);
   item.progress = calculateGoalProgress(item);
@@ -1202,8 +1432,10 @@ function addGoal() {
         actions: []
       }
     ],
-    owner: currentUser?.role === "member" ? currentUser.personName : selectedPerson || "",
+    owner: getAccountOwner(),
     helper: "",
+    startDate: "",
+    endDate: "",
     dueDate: "",
     progress: 0,
     status: "planning",
